@@ -72,3 +72,6 @@ ENV/
 *.bak
 *.backup
 *.cache
+
+# Google App Engine generated folder
+appengine-generated/
