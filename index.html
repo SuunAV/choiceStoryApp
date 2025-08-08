@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>Interactive Choice Story App</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #4a5568;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #718096;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            flex: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .story-display {
+            margin-bottom: 30px;
+        }
+
+        .scene-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .scene-description {
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 25px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .decision-prompt {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd89b, #19547b);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .choice-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 20px 25px;
+            font-size: 1.1em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .choice-button:hover::before {
+            left: 100%;
+        }
+
+        .choice-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .choice-button:active {
+            transform: translateY(-1px);
+        }
+
+        .consequence-display {
+            background: linear-gradient(135deg, #e6fffa, #b2f5ea);
+            border: 2px solid #38b2ac;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            line-height: 1.7;
+            color: #234e52;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .control-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-button:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .end-scene {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .end-scene h2 {
+            font-size: 2.5em;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .end-scene p {
+            font-size: 1.3em;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .game-container {
+                padding: 25px;
+            }
+
+            .scene-title {
+                font-size: 1.6em;
+            }
+
+            .scene-description {
+                font-size: 1.1em;
+                padding: 20px;
+            }
+
+            .choice-button {
+                padding: 15px 20px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .game-container {
+                padding: 20px;
+            }
+
+            .choice-button {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Interactive Choice Story</h1>
+            <p>Choose your path and shape the narrative</p>
+        </header>
+
+        <main class="game-container">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="story-display" id="storyDisplay">
+                <h2 class="scene-title" id="sceneTitle">Loading...</h2>
+                <div class="scene-description" id="sceneDescription">
+                    Preparing your interactive story experience...
+                </div>
+            </div>
+
+            <div class="choices-container" id="choicesContainer">
+                <!-- Choices will be populated by JavaScript -->
+            </div>
+
+            <div class="consequence-display" id="consequenceDisplay" style="display: none;">
+                <!-- Consequences will be shown here -->
+            </div>
+
+            <div class="controls">
+                <button class="control-button" onclick="resetGame()">Restart Story</button>
+                <button class="control-button" onclick="goBack()">Go Back</button>
+                <button class="control-button" onclick="saveProgress()">Save Progress</button>
+                <button class="control-button" onclick="loadProgress()">Load Progress</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /**
+         * Interactive Choice Story Game Engine
+         * Secure, cross-platform story game with branching narratives
+         */
+
+        class StoryGame {
+            constructor() {
+                this.currentScene = '';
+                this.gameData = {};
+                this.history = [];
+                this.totalScenes = 0;
+                this.init();
+            }
+
+            /**
+             * Initialize the game with default story data
+             */
+            init() {
+                // Load "The Perfect Gift" story as default
+                this.loadStory(this.getDefaultStory());
+                this.updateProgressBar();
+            }
+
+            /**
+             * Sanitize user input to prevent XSS attacks
+             * @param {string} input - Raw input string
+             * @returns {string} - Sanitized string
+             */
+            sanitizeInput(input) {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            }
+
+            /**
+             * Safely set innerHTML with sanitization
+             * @param {HTMLElement} element - Target element
+             * @param {string} content - Content to set
+             */
+            safeSetHTML(element, content) {
+                element.innerHTML = this.sanitizeInput(content);
+            }
+
+            /**
+             * Load story data and initialize game
+             * @param {Object} storyData - Story configuration object
+             */
+            loadStory(storyData) {
+                this.gameData = storyData;
+                this.totalScenes = Object.keys(storyData.scenes).length;
+                this.currentScene = storyData.start_scene;
+                this.history = [this.currentScene];
+                this.displayScene();
+            }
+
+            /**
+             * Display current scene with title, description, and choices
+             */
+            displayScene() {
+                const scene = this.gameData.scenes[this.currentScene];
+                if (!scene) {
+                    console.error('Scene not found:', this.currentScene);
+                    return;
+                }
+
+                const titleElement = document.getElementById('sceneTitle');
+                const descriptionElement = document.getElementById('sceneDescription');
+                const choicesContainer = document.getElementById('choicesContainer');
+                const consequenceDisplay = document.getElementById('consequenceDisplay');
+
+                // Hide consequence display
+                consequenceDisplay.style.display = 'none';
+
+                // Set scene content with sanitization
+                this.safeSetHTML(titleElement, scene.title);
+                this.safeSetHTML(descriptionElement, scene.description);
+
+                // Clear previous choices
+                choicesContainer.innerHTML = '';
+
+                // Check if this is an end scene
+                if (scene.is_end_scene) {
+                    this.displayEndScene();
+                    return;
+                }
+
+                // Display decision prompt and choices
+                if (scene.decision_point) {
+                    const promptDiv = document.createElement('div');
+                    promptDiv.className = 'decision-prompt';
+                    this.safeSetHTML(promptDiv, scene.decision_point.prompt);
+                    choicesContainer.appendChild(promptDiv);
+
+                    // Create choice buttons
+                    scene.decision_point.choices.forEach((choice, index) => {
+                        const button = document.createElement('button');
+                        button.className = 'choice-button fade-in';
+                        button.style.animationDelay = `${index * 0.1}s`;
+                        this.safeSetHTML(button, choice.text);
+                        
+                        button.onclick = () => this.makeChoice(choice);
+                        choicesContainer.appendChild(button);
+                    });
+                }
+
+                this.updateProgressBar();
+            }
+
+            /**
+             * Handle player choice selection
+             * @param {Object} choice - Selected choice object
+             */
+            makeChoice(choice) {
+                const consequenceDisplay = document.getElementById('consequenceDisplay');
+                const choicesContainer = document.getElementById('choicesContainer');
+
+                // Display consequence
+                this.safeSetHTML(consequenceDisplay, choice.consequence.description);
+                consequenceDisplay.style.display = 'block';
+
+                // Hide choices temporarily
+                choicesContainer.style.opacity = '0.5';
+
+                // Continue to next scene after 30 seconds (kid-friendly reading time)
+                setTimeout(() => {
+                    this.currentScene = choice.consequence.next_scene;
+                    this.history.push(this.currentScene);
+                    this.displayScene();
+                    choicesContainer.style.opacity = '1';
+                }, 30000);
+            }
+
+            /**
+             * Display end scene with celebration
+             */
+            displayEndScene() {
+                const choicesContainer = document.getElementById('choicesContainer');
+                const endDiv = document.createElement('div');
+                endDiv.className = 'end-scene fade-in';
+                endDiv.innerHTML = `
+                    <h2>🎉 Congratulations! 🎉</h2>
+                    <p>You've completed the story successfully!</p>
+                    <p>Thank you for playing!</p>
+                `;
+                choicesContainer.innerHTML = '';
+                choicesContainer.appendChild(endDiv);
+            }
+
+            /**
+             * Update progress bar based on current scene
+             */
+            updateProgressBar() {
+                const progressBar = document.getElementById('progressBar');
+                const sceneKeys = Object.keys(this.gameData.scenes);
+                const currentIndex = sceneKeys.indexOf(this.currentScene);
+                const progress = ((currentIndex + 1) / this.totalScenes) * 100;
+                progressBar.style.width = `${Math.max(10, progress)}%`;
+            }
+
+            /**
+             * Reset game to beginning
+             */
+            reset() {
+                this.currentScene = this.gameData.start_scene;
+                this.history = [this.currentScene];
+                this.displayScene();
+            }
+
+            /**
+             * Go back to previous scene
+             */
+            goBack() {
+                if (this.history.length > 1) {
+                    this.history.pop(); // Remove current scene
+                    this.currentScene = this.history[this.history.length - 1];
+                    this.displayScene();
+                }
+            }
+
+            /**
+             * Save current progress to localStorage (with error handling)
+             */
+            saveProgress() {
+                try {
+                    const saveData = {
+                        currentScene: this.currentScene,
+                        history: this.history,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('storyGameSave', JSON.stringify(saveData));
+                    alert('Progress saved successfully!');
+                } catch (error) {
+                    console.error('Failed to save progress:', error);
+                    alert('Failed to save progress. Please try again.');
+                }
+            }
+
+            /**
+             * Load progress from localStorage (with error handling)
+             */
+            loadProgress() {
+                try {
+                    const saveData = JSON.parse(localStorage.getItem('storyGameSave'));
+                    if (saveData) {
+                        this.currentScene = saveData.currentScene;
+                        this.history = saveData.history;
+                        this.displayScene();
+                        alert('Progress loaded successfully!');
+                    } else {
+                        alert('No saved progress found.');
+                    }
+                } catch (error) {
+                    console.error('Failed to load progress:', error);
+                    alert('Failed to load progress. Please try again.');
+                }
+            }
+
+            /**
+             * Get default story data - "The Perfect Gift"
+             * @returns {Object} - Story data structure
+             */
+            getDefaultStory() {
+                return {
+                    "game_title": "The Perfect Gift",
+                    "start_scene": "SCENE_1",
+                    "scenes": {
+                        "SCENE_1": {
+                            "title": "The Challenge",
+                            "description": "You are Marlon. Your teacher, Miss Yamaguchi, has given your class a special project: find a perfect gift to send to the kids at Children's Hospital. You're completely stumped! Your mom is busy with the baby but tells you, 'You'll think of something extra special.' You feel frustrated. Who should you ask for help next?",
+                            "decision_point": {
+                                "prompt": "Who will you ask for help?",
+                                "choices": [
+                                    {
+                                        "text": "Ask my sister, Dejah.",
+                                        "consequence": {
+                                            "description": "You find Dejah watching TV. 'I'll help you think of something when my show is over,' she promises, but she doesn't turn away from the screen. You feel ignored and storm out of the room, still needing an idea.",
+                                            "next_scene": "SCENE_2"
+                                        }
+                                    },
+                                    {
+                                        "text": "Wait for Dad to come home.",
+                                        "consequence": {
+                                            "description": "When Dad gets home, you meet him at the door. 'Give me a few minutes,' he says, heading to the garage to fix a light. 'I know you will come up with something.' You feel like no one has time to help you.",
+                                            "next_scene": "SCENE_2"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_2": {
+                            "title": "An Idea at Home",
+                            "description": "Feeling like you have to solve this on your own, you go about your day. The next morning, while feeding your goldfish, Mollie and Sparky, you watch them swim. An idea pops into your head. Maybe goldfish would be a perfect gift!",
+                            "decision_point": {
+                                "prompt": "Should you suggest giving goldfish to Miss Yamaguchi?",
+                                "choices": [
+                                    {
+                                        "text": "Yes! Tell her about the goldfish idea.",
+                                        "consequence": {
+                                            "description": "You tell Miss Yamaguchi your idea. She listens patiently but says, 'That would never do.' You feel disappointed. 'If I were sick,' you think, 'watching goldfish would make me feel much better.' You still need an idea.",
+                                            "next_scene": "SCENE_3"
+                                        }
+                                    },
+                                    {
+                                        "text": "No, that's probably not a good idea. Think of something else.",
+                                        "consequence": {
+                                            "description": "You decide against the goldfish idea. It might be too complicated. You're back to square one, trying to think of the perfect gift.",
+                                            "next_scene": "SCENE_3"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_3": {
+                            "title": "Playing with a Friend",
+                            "description": "After school, you're outside shooting marbles with your best friend, Carlos. The marbles are bright and shiny, and you have a lot of fun playing with them. Another idea strikes you. A bag of shiny marbles!",
+                            "decision_point": {
+                                "prompt": "Should you suggest giving marbles to Miss Yamaguchi?",
+                                "choices": [
+                                    {
+                                        "text": "Yes! Ask if marbles would be a good gift.",
+                                        "consequence": {
+                                            "description": "You suggest the marbles to Miss Yamaguchi. Again, she says, 'That would never do.' You're getting frustrated. 'If someone gave me shiny marbles, I would feel much better,' you think to yourself. The search continues.",
+                                            "next_scene": "SCENE_4"
+                                        }
+                                    },
+                                    {
+                                        "text": "No, she'll probably say no again.",
+                                        "consequence": {
+                                            "description": "You remember how she turned down your last idea and decide not to ask. You're feeling discouraged, but you know you can't give up yet.",
+                                            "next_scene": "SCENE_4"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_4": {
+                            "title": "A Sign on the Street",
+                            "description": "On your way home from school, you see a sign that says 'FREE PUPPIES'. Your heart leaps! A puppy would make anyone feel better! This has to be the perfect gift.",
+                            "decision_point": {
+                                "prompt": "This is it! Should you ask Miss Yamaguchi about giving a puppy?",
+                                "choices": [
+                                    {
+                                        "text": "Yes! This is the best idea yet!",
+                                        "consequence": {
+                                            "description": "You excitedly tell Miss Yamaguchi your idea. For the third time, she shakes her head and says, 'That would never do.' You feel completely defeated. You don't think you'll ever find the right gift.",
+                                            "next_scene": "SCENE_5"
+                                        }
+                                    },
+                                    {
+                                        "text": "No, a puppy is a big responsibility. It won't work.",
+                                        "consequence": {
+                                            "description": "You realize that a puppy is a huge responsibility and probably not allowed in a hospital. You feel completely defeated and are all out of ideas.",
+                                            "next_scene": "SCENE_5"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_5": {
+                            "title": "A Trip to Grandma's",
+                            "description": "That Saturday, you and Dejah go to spend the night at your grandparents' house. You still feel sad about not having a gift idea. Grandma asks what you've decided on for the hospital gift.",
+                            "decision_point": {
+                                "prompt": "What do you tell your Grandma?",
+                                "choices": [
+                                    {
+                                        "text": "Tell her you haven't been able to think of a gift that Miss Yamaguchi will approve.",
+                                        "consequence": {
+                                            "description": "You shake your head sadly and explain your problem. Your grandparents listen kindly, but don't have an immediate answer. You go to bed still worried.",
+                                            "next_scene": "SCENE_6"
+                                        }
+                                    },
+                                    {
+                                        "text": "Just say, 'I'm still thinking about it.'",
+                                        "consequence": {
+                                            "description": "You don't want to talk about it. You keep your worries to yourself and try to have a good time. But the problem is still on your mind when you go to bed.",
+                                            "next_scene": "SCENE_6"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_6": {
+                            "title": "A Cat and a Sock",
+                            "description": "The next morning, you wake up to the sound of rain. In the kitchen, Grandma's cat, Mr. Spock, runs in with something in his mouth. You gently pick him up. 'Hey! That's one of Granddaddy's socks,' you say. Grandma laughs and explains how Mr. Spock loves to play with clothes. You giggle, thinking about Granddaddy having a leftover sock.",
+                            "decision_point": {
+                                "prompt": "Thinking about the leftover sock suddenly makes something click in your brain...",
+                                "choices": [
+                                    {
+                                        "text": "Remember when Grandma made you a stuffed sock koala when you were sick.",
+                                        "consequence": {
+                                            "description": "Suddenly, your face lights up! You remember being five years old and sick, and Grandma made you a stuffed koala out of one of Granddaddy's socks. It made you feel so much better! 'Stuffed sock animals!' you shout. 'The perfect gifts!'",
+                                            "next_scene": "SCENE_7"
+                                        }
+                                    },
+                                    {
+                                        "text": "Tell Granddaddy he's missing a sock.",
+                                        "consequence": {
+                                            "description": "You run to tell Granddaddy about his missing sock. Everyone has a good laugh about Mr. Spock the sock thief. It's a funny moment, but you still haven't found your perfect gift idea.",
+                                            "next_scene": "SCENE_6_HINT"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_6_HINT": {
+                            "title": "A Funny Moment",
+                            "description": "Everyone is laughing about Mr. Spock the cat. But you still need a gift idea. You look at the sock in the cat's mouth. It reminds you of something from a long time ago... something your grandma did for you when you weren't feeling well.",
+                            "decision_point": {
+                                "prompt": "What do you remember?",
+                                "choices": [
+                                    {
+                                        "text": "Remember the stuffed sock koala.",
+                                        "consequence": {
+                                            "description": "Your face lights up! You remember being sick, and Grandma made you a stuffed koala out of one of Granddaddy's socks. It made you feel so much better! 'Stuffed sock animals!' you shout. 'The perfect gifts!'",
+                                            "next_scene": "SCENE_7"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_7": {
+                            "title": "A Great Thinker",
+                            "description": "'Marlon, you are a great thinker,' Granddaddy says. Grandma laughs. 'Making stuffed sock animals is easy and fun,' she says. 'I'll show you how. The kids will cherish your gifts forever.' You feel a huge smile spread across your face. Now you just need supplies.",
+                            "decision_point": {
+                                "prompt": "How will you get the supplies (socks, cotton stuffing, etc.)?",
+                                "choices": [
+                                    {
+                                        "text": "Use money from the piggy bank you keep at your grandparents' house.",
+                                        "consequence": {
+                                            "description": "You decide to use your own savings. It makes the gift feel even more personal. As soon as the rain stops, Granddaddy drives you to SuperMart to buy everything you need.",
+                                            "next_scene": "SCENE_8"
+                                        }
+                                    },
+                                    {
+                                        "text": "Ask Grandma and Granddaddy to buy the supplies.",
+                                        "consequence": {
+                                            "description": "Your grandparents are happy to help and buy the supplies for you. As soon as the rain stops, Granddaddy drives to SuperMart to get everything you need.",
+                                            "next_scene": "SCENE_8"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_8": {
+                            "title": "Creation Station",
+                            "description": "When you get back from the store, Grandma and Dejah have everything ready. The four of you spend the whole afternoon together. You cut, you sew, and you stuff until you have a whole basket full of amazing stuffed sock dogs, cats, fish, and other animals. You feel incredibly proud.",
+                            "decision_point": {
+                                "prompt": "It's time to go to school. You carry the basket into the classroom.",
+                                "choices": [
+                                    {
+                                        "text": "Show Miss Yamaguchi your creation.",
+                                        "consequence": {
+                                            "description": "'Look at what we made!' you shout with pride. You walk up to Miss Yamaguchi's desk, feeling hopeful. 'She has to say yes,' you think. 'She has to!'",
+                                            "next_scene": "SCENE_9_ENDING"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_9_ENDING": {
+                            "title": "The Perfect Gift",
+                            "description": "Miss Yamaguchi's eyes widen when she sees the basket filled with colorful, handmade sock animals. A huge smile spreads across her face. 'Marlon,' she says, 'Now THAT'S the PERFECT GIFT!' You did it! You found the perfect gift by thinking about what would truly make someone else feel better. Congratulations!",
+                            "is_end_scene": true
+                        }
+                    }
+                };
+            }
+        }
+
+        // Global game instance
+        let game;
+
+        /**
+         * Initialize game when page loads
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            game = new StoryGame();
+        });
+
+        /**
+         * Control button functions (with error handling)
+         */
+        function resetGame() {
+            if (confirm('Are you sure you want to restart the story?')) {
+                game.reset();
+            }
+        }
+
+        function goBack() {
+            game.goBack();
+        }
+
+        function saveProgress() {
+            game.saveProgress();
+        }
+
+        function loadProgress() {
+            game.loadProgress();
+        }
+
+        /**
+         * Handle window resize for responsive design
+         */
+        window.addEventListener('resize', function() {
+            if (game) {
+                game.updateProgressBar();
+            }
+        });
+    </script>
+</body>
+</html>

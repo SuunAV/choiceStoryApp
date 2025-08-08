@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Editor - Choice Story App</title>
+    <style>
+        /* Story Editor Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .editor-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .editor-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .editor-header h1 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .editor-main {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .editor-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .scene-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .scene-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scene-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .scene-item.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .choice-editor {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+
+        .choice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .json-preview {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 500px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .editor-main {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <header class="editor-header">
+            <h1>📝 Story Editor</h1>
+            <p>Create and edit interactive choice-based stories</p>
+        </header>
+
+        <div class="editor-main">
+            <div class="editor-panel">
+                <h2>Story Editor</h2>
+                
+                <!-- Story Metadata -->
+                <div class="form-group">
+                    <label>Story Title:</label>
+                    <input type="text" id="storyTitle" placeholder="Enter story title">
+                </div>
+
+                <div class="form-group">
+                    <label>Starting Scene ID:</label>
+                    <input type="text" id="startScene" placeholder="e.g., SCENE_1">
+                </div>
+
+                <!-- Scene Editor -->
+                <h3>Scene Editor</h3>
+                
+                <div class="form-group">
+                    <label>Scene ID:</label>
+                    <input type="text" id="sceneId" placeholder="e.g., SCENE_1">
+                </div>
+
+                <div class="form-group">
+                    <label>Scene Title:</label>
+                    <input type="text" id="sceneTitle" placeholder="Enter scene title">
+                </div>
+
+                <div class="form-group">
+                    <label>Scene Description:</label>
+                    <textarea id="sceneDescription" placeholder="Enter scene description..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Decision Prompt:</label>
+                    <input type="text" id="decisionPrompt" placeholder="What question do you ask the player?">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isEndScene"> This is an ending scene
+                    </label>
+                </div>
+
+                <!-- Choice Editor -->
+                <h3>Choices</h3>
+                <div id="choicesContainer">
+                    <!-- Dynamic choice editors will be added here -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-success" onclick="addChoice()">Add Choice</button>
+                    <button class="btn" onclick="saveScene()">Save Scene</button>
+                    <button class="btn btn-secondary" onclick="clearScene()">Clear</button>
+                </div>
+            </div>
+
+            <div class="editor-panel">
+                <h2>Story Overview</h2>
+                
+                <div class="scene-list" id="sceneList">
+                    <!-- Scene list will be populated here -->
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-success" onclick="exportStory()">Export JSON</button>
+                    <button class="btn" onclick="previewStory()">Preview Story</button>
+                    <button class="btn btn-secondary" onclick="loadExample()">Load Example</button>
+                    <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+                </div>
+
+                <h3>JSON Preview</h3>
+                <div class="json-preview" id="jsonPreview">
+                    Story data will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Story Editor - Create interactive choice-based stories
+         * Secure editor with input validation and XSS protection
+         */
+
+        class StoryEditor {
+            constructor() {
+                this.currentStory = {
+                    game_title: "",
+                    start_scene: "",
+                    scenes: {}
+                };
+                this.currentSceneId = null;
+                this.choiceCounter = 0;
+                this.init();
+            }
+
+            /**
+             * Initialize the editor
+             */
+            init() {
+                this.updateSceneList();
+                this.updateJsonPreview();
+                this.loadExample(); // Load example story by default
+            }
+
+            /**
+             * Sanitize user input to prevent XSS
+             * @param {string} input - Raw input
+             * @returns {string} - Sanitized input
+             */
+            sanitizeInput(input) {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            }
+
+            /**
+             * Add a new choice editor
+             */
+            addChoice() {
+                const container = document.getElementById('choicesContainer');
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'choice-editor';
+                choiceDiv.innerHTML = `
+                    <div class="choice-header">
+                        <h4>Choice ${++this.choiceCounter}</h4>
+                        <button class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Choice Text:</label>
+                        <input type="text" class="choice-text" placeholder="What choice do players see?">
+                    </div>
+                    <div class="form-group">
+                        <label>Consequence Description:</label>
+                        <textarea class="choice-consequence" placeholder="What happens when this choice is selected?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Next Scene ID:</label>
+                        <input type="text" class="choice-next-scene" placeholder="Which scene comes next? (e.g., SCENE_2)">
+                    </div>
+                `;
+                container.appendChild(choiceDiv);
+            }
+
+            /**
+             * Save the current scene
+             */
+            saveScene() {
+                const sceneId = document.getElementById('sceneId').value.trim();
+                const sceneTitle = document.getElementById('sceneTitle').value.trim();
+                const sceneDescription = document.getElementById('sceneDescription').value.trim();
+                const decisionPrompt = document.getElementById('decisionPrompt').value.trim();
+                const isEndScene = document.getElementById('isEndScene').checked;
+
+                if (!sceneId || !sceneTitle || !sceneDescription) {
+                    alert('Please fill in Scene ID, Title, and Description.');
+                    return;
+                }
+
+                // Collect choices
+                const choices = [];
+                const choiceEditors = document.querySelectorAll('.choice-editor');
+                
+                if (!isEndScene) {
+                    if (choiceEditors.length === 0) {
+                        alert('Non-ending scenes must have at least one choice.');
+                        return;
+                    }
+
+                    choiceEditors.forEach(editor => {
+                        const text = editor.querySelector('.choice-text').value.trim();
+                        const consequence = editor.querySelector('.choice-consequence').value.trim();
+                        const nextScene = editor.querySelector('.choice-next-scene').value.trim();
+
+                        if (text && consequence && nextScene) {
+                            choices.push({
+                                text: this.sanitizeInput(text),
+                                consequence: {
+                                    description: this.sanitizeInput(consequence),
+                                    next_scene: this.sanitizeInput(nextScene)
+                                }
+                            });
+                        }
+                    });
+
+                    if (choices.length === 0) {
+                        alert('Please add at least one complete choice.');
+                        return;
+                    }
+                }
+
+                // Create scene object
+                const scene = {
+                    title: this.sanitizeInput(sceneTitle),
+                    description: this.sanitizeInput(sceneDescription)
+                };
+
+                if (isEndScene) {
+                    scene.is_end_scene = true;
+                } else {
+                    scene.decision_point = {
+                        prompt: this.sanitizeInput(decisionPrompt),
+                        choices: choices
+                    };
+                }
+
+                // Save to story
+                this.currentStory.scenes[sceneId] = scene;
+                
+                // Update story metadata
+                const storyTitle = document.getElementById('storyTitle').value.trim();
+                const startScene = document.getElementById('startScene').value.trim();
+                
+                if (storyTitle) this.currentStory.game_title = this.sanitizeInput(storyTitle);
+                if (startScene) this.currentStory.start_scene = this.sanitizeInput(startScene);
+
+                this.updateSceneList();
+                this.updateJsonPreview();
+                
+                alert(`Scene "${sceneId}" saved successfully!`);
+            }
+
+            /**
+             * Load a scene for editing
+             * @param {string} sceneId - Scene ID to load
+             */
+            loadScene(sceneId) {
+                const scene = this.currentStory.scenes[sceneId];
+                if (!scene) return;
+
+                this.currentSceneId = sceneId;
+
+                document.getElementById('sceneId').value = sceneId;
+                document.getElementById('sceneTitle').value = scene.title || '';
+                document.getElementById('sceneDescription').value = scene.description || '';
+                document.getElementById('isEndScene').checked = scene.is_end_scene || false;
+
+                // Clear existing choices
+                document.getElementById('choicesContainer').innerHTML = '';
+                this.choiceCounter = 0;
+
+                if (scene.decision_point) {
+                    document.getElementById('decisionPrompt').value = scene.decision_point.prompt || '';
+                    
+                    // Load choices
+                    scene.decision_point.choices.forEach(choice => {
+                        this.addChoice();
+                        const lastChoice = document.querySelector('.choice-editor:last-child');
+                        lastChoice.querySelector('.choice-text').value = choice.text;
+                        lastChoice.querySelector('.choice-consequence').value = choice.consequence.description;
+                        lastChoice.querySelector('.choice-next-scene').value = choice.consequence.next_scene;
+                    });
+                } else {
+                    document.getElementById('decisionPrompt').value = '';
+                }
+            }
+
+            /**
+             * Clear the scene editor
+             */
+            clearScene() {
+                document.getElementById('sceneId').value = '';
+                document.getElementById('sceneTitle').value = '';
+                document.getElementById('sceneDescription').value = '';
+                document.getElementById('decisionPrompt').value = '';
+                document.getElementById('isEndScene').checked = false;
+                document.getElementById('choicesContainer').innerHTML = '';
+                this.choiceCounter = 0;
+                this.currentSceneId = null;
+            }
+
+            /**
+             * Update the scene list display
+             */
+            updateSceneList() {
+                const container = document.getElementById('sceneList');
+                container.innerHTML = '';
+
+                Object.keys(this.currentStory.scenes).forEach(sceneId => {
+                    const scene = this.currentStory.scenes[sceneId];
+                    const div = document.createElement('div');
+                    div.className = 'scene-item';
+                    if (sceneId === this.currentSceneId) {
+                        div.classList.add('active');
+                    }
+                    div.innerHTML = `
+                        <strong>${sceneId}</strong><br>
+                        <small>${scene.title}</small><br>
+                        <small style="color: #666;">${scene.is_end_scene ? 'End Scene' : 'Decision Scene'}</small>
+                    `;
+                    div.onclick = () => this.loadScene(sceneId);
+                    container.appendChild(div);
+                });
+            }
+
+            /**
+             * Update JSON preview
+             */
+            updateJsonPreview() {
+                const preview = document.getElementById('jsonPreview');
+                preview.textContent = JSON.stringify(this.currentStory, null, 2);
+            }
+
+            /**
+             * Export story as JSON file
+             */
+            exportStory() {
+                if (Object.keys(this.currentStory.scenes).length === 0) {
+                    alert('No scenes to export. Please create at least one scene.');
+                    return;
+                }
+
+                const dataStr = JSON.stringify(this.currentStory, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `${this.currentStory.game_title || 'story'}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            }
+
+            /**
+             * Preview story in new window
+             */
+            previewStory() {
+                if (Object.keys(this.currentStory.scenes).length === 0) {
+                    alert('No scenes to preview. Please create at least one scene.');
+                    return;
+                }
+
+                const storyData = JSON.stringify(this.currentStory, null, 2);
+                const previewUrl = 'index.html';
+                const newWindow = window.open(previewUrl, '_blank');
+                
+                // Note: In a real implementation, you'd need to pass the story data
+                // This is a simplified version for demonstration
+            }
+
+            /**
+             * Load example story
+             */
+            loadExample() {
+                // Load "The Perfect Gift" as an example
+                this.currentStory = {
+                    "game_title": "The Perfect Gift",
+                    "start_scene": "SCENE_1",
+                    "scenes": {
+                        "SCENE_1": {
+                            "title": "The Challenge",
+                            "description": "You are Marlon. Your teacher, Miss Yamaguchi, has given your class a special project: find a perfect gift to send to the kids at Children's Hospital.",
+                            "decision_point": {
+                                "prompt": "Who will you ask for help?",
+                                "choices": [
+                                    {
+                                        "text": "Ask my sister, Dejah.",
+                                        "consequence": {
+                                            "description": "Dejah is watching TV and says she'll help later, but doesn't turn away from the screen.",
+                                            "next_scene": "SCENE_2"
+                                        }
+                                    },
+                                    {
+                                        "text": "Wait for Dad to come home.",
+                                        "consequence": {
+                                            "description": "Dad says he needs a few minutes but believes you'll think of something.",
+                                            "next_scene": "SCENE_2"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "SCENE_2": {
+                            "title": "The End",
+                            "description": "You found the perfect gift! Congratulations!",
+                            "is_end_scene": true
+                        }
+                    }
+                };
+
+                document.getElementById('storyTitle').value = this.currentStory.game_title;
+                document.getElementById('startScene').value = this.currentStory.start_scene;
+                
+                this.updateSceneList();
+                this.updateJsonPreview();
+            }
+
+            /**
+             * Clear all story data
+             */
+            clearAll() {
+                if (confirm('Are you sure you want to clear all story data?')) {
+                    this.currentStory = {
+                        game_title: "",
+                        start_scene: "",
+                        scenes: {}
+                    };
+                    this.clearScene();
+                    this.updateSceneList();
+                    this.updateJsonPreview();
+                }
+            }
+        }
+
+        // Global editor instance
+        let editor;
+
+        // Initialize editor when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            editor = new StoryEditor();
+        });
+
+        // Global functions for button handlers
+        function addChoice() {
+            editor.addChoice();
+        }
+
+        function saveScene() {
+            editor.saveScene();
+        }
+
+        function clearScene() {
+            editor.clearScene();
+        }
+
+        function exportStory() {
+            editor.exportStory();
+        }
+
+        function previewStory() {
+            editor.previewStory();
+        }
+
+        function loadExample() {
+            editor.loadExample();
+        }
+
+        function clearAll() {
+            editor.clearAll();
+        }
+    </script>
+</body>
+</html>

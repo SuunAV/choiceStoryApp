@@ -1,0 +1,67 @@
+{
+  "name": "interactive-story-platform",
+  "version": "1.0.0",
+  "description": "Full-stack platform for transforming books into interactive, choice-based story applications",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "app-template"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "build": "npm run frontend:build && npm run backend:build",
+    "start": "npm run backend:start",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm start",
+    "test": "npm run frontend:test && npm run backend:test",
+    "frontend:test": "cd frontend && npm test",
+    "backend:test": "cd backend && npm test",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write .",
+    "security:scan": "npm audit && snyk test",
+    "generate:app": "node scripts/generate-app.js",
+    "build:electron": "node scripts/build-electron.js",
+    "build:mobile": "node scripts/build-mobile.js",
+    "deploy": "node scripts/deploy.js"
+  },
+  "keywords": [
+    "interactive-stories",
+    "book-transformation",
+    "ai-powered",
+    "cross-platform",
+    "storytelling",
+    "app-generation"
+  ],
+  "author": "Interactive Story Platform Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0",
+    "snyk": "^1.1248.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/interactive-story-platform/platform.git"
+  },
+  "bugs": {
+    "url": "https://github.com/interactive-story-platform/platform/issues"
+  },
+  "homepage": "https://github.com/interactive-story-platform/platform#readme"
+}
