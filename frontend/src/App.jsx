@@ -20,10 +20,10 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             
             {/* Story creation workflow */}
-            <Route path="/create" element={<StoryCreator />} />
+            <Route path="/create-story" element={<StoryCreator />} />
             
-            {/* Redirect any unknown routes to dashboard */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Fallback route */}
+            <Route path="*" element={<Dashboard />} />
           </Routes>
         </Layout>
         

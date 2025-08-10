@@ -6,7 +6,7 @@ import { CheckCircle, AlertTriangle, Clock, Brain, FileText, Zap } from 'lucide-
  * Displays AI processing simulation with progress indicators and analysis results
  * Includes XSS protection and input sanitization throughout
  */
-const AIAnalysisStep = ({ bookData, onNext, onBack }) => {
+const AIAnalysisStep = ({ storyData, updateStoryData, onNext, onPrev }) => {
   const [currentPhase, setCurrentPhase] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisComplete, setAnalysisComplete] = useState(false);
@@ -47,7 +47,7 @@ const AIAnalysisStep = ({ bookData, onNext, onBack }) => {
 
   // Simulate AI analysis process
   useEffect(() => {
-    if (!bookData) {
+    if (!storyData || !storyData.bookContent) {
       setError('No book data provided for analysis');
       setIsAnalyzing(false);
       return;
@@ -62,10 +62,15 @@ const AIAnalysisStep = ({ bookData, onNext, onBack }) => {
         }
 
         // Generate mock analysis results (in real app, this would come from AI service)
-        const results = generateMockAnalysisResults(bookData);
+        const results = generateMockAnalysisResults(storyData);
         setAnalysisResults(results);
         setAnalysisComplete(true);
         setIsAnalyzing(false);
+        
+        // Update story data with analysis results
+        if (updateStoryData) {
+          updateStoryData({ analysis: results });
+        }
       } catch (err) {
         // Sanitize error message to prevent XSS
         const sanitizedError = String(err.message || 'Analysis failed').replace(/[<>]/g, '');
@@ -75,13 +80,13 @@ const AIAnalysisStep = ({ bookData, onNext, onBack }) => {
     };
 
     runAnalysis();
-  }, [bookData]);
+  }, [storyData, updateStoryData]);
 
   /**
    * Generate mock analysis results based on book content
    * Sanitizes all text content to prevent XSS attacks
    */
-  const generateMockAnalysisResults = (book) => {
+  const generateMockAnalysisResults = (storyData) => {
     // Sanitize book title and content
     const sanitizeText = (text) => {
       if (!text) return '';
@@ -90,34 +95,95 @@ const AIAnalysisStep = ({ bookData, onNext, onBack }) => {
         .substring(0, 1000); // Limit length
     };
 
-    const title = sanitizeText(book.name || 'Unknown Title');
-    const wordCount = book.content ? book.content.length : 0;
+    const title = sanitizeText(storyData.title || 'Unknown Title');
+    const content = storyData.bookContent || '';
+    const wordCount = content.length;
+    const words = content.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    
+    // Analyze content for themes based on keywords
+    const themeKeywords = {
+      'Family relationships': ['family', 'mother', 'father', 'sister', 'brother', 'parent', 'grandma', 'grandpa'],
+      'Adventure': ['adventure', 'journey', 'explore', 'discover', 'travel', 'quest'],
+      'Friendship': ['friend', 'friendship', 'together', 'help', 'support'],
+      'Problem-solving': ['problem', 'solve', 'think', 'figure', 'solution', 'decide'],
+      'Creativity': ['create', 'imagine', 'draw', 'make', 'creative', 'art'],
+      'School life': ['school', 'teacher', 'class', 'student', 'learn', 'homework'],
+      'Mystery': ['mystery', 'secret', 'hidden', 'clue', 'investigate'],
+      'Magic': ['magic', 'magical', 'wizard', 'spell', 'enchanted']
+    };
+
+    // Detect themes based on content
+    const detectedThemes = [];
+    Object.entries(themeKeywords).forEach(([theme, keywords]) => {
+      const matches = keywords.filter(keyword => content.toLowerCase().includes(keyword)).length;
+      if (matches > 0) {
+        detectedThemes.push({ theme, score: matches });
+      }
+    });
+
+    // Sort themes by relevance and take top 4
+    const topThemes = detectedThemes
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+      .map(t => t.theme);
+
+    // Generate realistic character names from content
+    const commonNames = content.match(/\b[A-Z][a-z]{2,}\b/g) || [];
+    const uniqueNames = [...new Set(commonNames)].slice(0, 4);
+    const characters = uniqueNames.map((name, index) => ({
+      name: sanitizeText(name),
+      role: index === 0 ? 'Protagonist' : 
+            index === 1 ? 'Supporting Character' : 
+            index === 2 ? 'Friend/Ally' : 'Minor Character'
+    }));
+
+    // Calculate complexity based on content analysis
+    const sentenceCount = content.split(/[.!?]+/).length;
+    const avgWordsPerSentence = wordCount > 0 ? sentenceCount / wordCount * 100 : 0;
+    const complexity = avgWordsPerSentence > 15 ? 'Advanced' :
+                      avgWordsPerSentence > 10 ? 'Intermediate' : 
+                      'Beginner-friendly';
+
+    // Estimate decision points based on content length and structure
+    const paragraphs = content.split(/\n\s*\n/).length;
+    const estimatedDecisions = Math.max(3, Math.min(15, Math.floor(paragraphs * 1.5)));
+    
+    // Age recommendation based on complexity and themes
+    const hasAdvancedThemes = topThemes.some(theme => 
+      ['Mystery', 'Adventure'].includes(theme));
+    const ageGroup = hasAdvancedThemes && complexity === 'Advanced' ? '10-14 years' :
+                    complexity === 'Intermediate' ? '8-12 years' : '6-10 years';
 
     return {
       title,
       wordCount,
       estimatedReadingTime: Math.ceil(wordCount / 200), // 200 words per minute
-      confidence: 0.92,
-      themes: [
-        'Family relationships',
-        'Problem-solving',
-        'Creativity and imagination',
-        'Helping others'
+      confidence: 0.85 + (Math.random() * 0.1), // 85-95% confidence
+      themes: topThemes.length > 0 ? topThemes : ['Adventure', 'Problem-solving', 'Friendship'],
+      characters: characters.length > 0 ? characters : [
+        { name: 'Main Character', role: 'Protagonist' },
+        { name: 'Helper', role: 'Supporting Character' }
       ],
-      characters: [
-        { name: 'Marlon', role: 'Protagonist' },
-        { name: 'Miss Yamaguchi', role: 'Teacher' },
-        { name: 'Grandma', role: 'Supporting Character' },
-        { name: 'Dejah', role: 'Sister' }
-      ],
-      decisionPoints: 12,
-      estimatedGameLength: '15-20 minutes',
-      complexity: 'Beginner-friendly',
-      ageRecommendation: '8-12 years',
-      narrativePaths: 8,
-      potentialEndings: 3
+      decisionPoints: estimatedDecisions,
+      estimatedGameLength: `${Math.ceil(estimatedDecisions * 1.2)}-${Math.ceil(estimatedDecisions * 1.8)} minutes`,
+      complexity,
+      ageRecommendation: ageGroup,
+      narrativePaths: Math.max(3, Math.floor(estimatedDecisions * 0.7)),
+      potentialEndings: Math.max(2, Math.min(5, Math.floor(estimatedDecisions / 4))),
+      // Additional analysis data
+      analysisDetails: {
+        paragraphCount: paragraphs,
+        sentenceCount,
+        averageWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
+        vocabularyComplexity: words.length > 100 ? 'Rich' : words.length > 50 ? 'Moderate' : 'Simple',
+        suggestedImprovements: [
+          wordCount < 500 ? 'Consider adding more detail to scenes' : null,
+          characters.length < 2 ? 'Add more character interactions' : null,
+          topThemes.length < 2 ? 'Develop stronger thematic elements' : null
+        ].filter(Boolean)
+      }
     };
-  };
+  };;
 
   // Handle continue to next step
   const handleContinue = () => {

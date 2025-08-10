@@ -12,7 +12,7 @@ const QuickActions = () => {
       title: 'Initialize Story',
       description: 'Launch new story project',
       icon: Plus,
-      href: '/create',
+      href: '/create-story',
       command: 'story --init',
       primary: true
     },
