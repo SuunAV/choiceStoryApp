@@ -1,61 +1,68 @@
 import React from 'react'
 
-/**
- * StatsCard Component - Displays key statistics with icon and trend
- * Used in the dashboard to show project metrics
- * Security: All displayed data is sanitized to prevent XSS
- */
-const StatsCard = ({ title, value, icon: Icon, color = 'blue', trend }) => {
+const StatsCard = ({ title, value, icon: Icon, color, trend, sparklineData = [] }) => {
   const colorClasses = {
-    blue: {
-      bg: 'bg-blue-50',
-      icon: 'text-blue-600',
-      text: 'text-blue-900'
-    },
-    green: {
-      bg: 'bg-green-50',
-      icon: 'text-green-600',
-      text: 'text-green-900'
-    },
-    yellow: {
-      bg: 'bg-yellow-50',
-      icon: 'text-yellow-600',
-      text: 'text-yellow-900'
-    },
-    purple: {
-      bg: 'bg-purple-50',
-      icon: 'text-purple-600',
-      text: 'text-purple-900'
-    },
-    red: {
-      bg: 'bg-red-50',
-      icon: 'text-red-600',
-      text: 'text-red-900'
-    }
+    primary: 'from-primary-500 to-primary-600 text-primary-400 bg-primary-400/10 border-primary-500/30',
+    accent: 'from-accent-500 to-accent-600 text-accent-400 bg-accent-400/10 border-accent-500/30',
+    'tech-green': 'from-tech-green-500 to-tech-green-600 text-tech-green-400 bg-tech-green-400/10 border-tech-green-500/30',
+    'tech-purple': 'from-tech-purple-500 to-tech-purple-600 text-tech-purple-400 bg-tech-purple-400/10 border-tech-purple-500/30',
+    'tech-yellow': 'from-tech-yellow-500 to-tech-yellow-600 text-tech-yellow-400 bg-tech-yellow-400/10 border-tech-yellow-500/30',
   }
 
-  const colors = colorClasses[color] || colorClasses.blue
-
-  // Sanitize display values to prevent XSS
-  const sanitizedTitle = String(title).replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  const sanitizedTrend = trend ? String(trend).replace(/</g, '&lt;').replace(/>/g, '&gt;') : null
+  const classes = colorClasses[color] || colorClasses.primary
+  const maxValue = Math.max(...sparklineData)
+  const minValue = Math.min(...sparklineData)
+  const range = maxValue - minValue || 1
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
-          <p className="text-2xl font-bold text-gray-900 mt-2">
-            {typeof value === 'number' ? value.toLocaleString() : String(value)}
-          </p>
-          {sanitizedTrend && (
-            <p className="text-sm text-gray-500 mt-1" dangerouslySetInnerHTML={{ __html: sanitizedTrend }} />
-          )}
+    <div className="tech-border rounded-xl p-6 glass hover:shadow-tech transition-all duration-300 group">
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 rounded-lg ${classes.split(' ').slice(2).join(' ')} backdrop-blur-sm`}>
+          <Icon className={`h-6 w-6 ${classes.split(' ')[2]}`} />
         </div>
-        <div className={`${colors.bg} p-3 rounded-lg`}>
-          <Icon className={`h-6 w-6 ${colors.icon}`} />
+        <div className="text-right">
+          <span className="text-xs font-mono text-dark-400 uppercase">{title}</span>
         </div>
       </div>
+      
+      <div className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h3 className="text-3xl font-bold font-mono text-dark-100 group-hover:text-white transition-colors">
+            {value}
+          </h3>
+          {trend && (
+            <span className={`text-sm font-medium ${classes.split(' ')[2]}`}>
+              {trend}
+            </span>
+          )}
+        </div>
+        
+        {sparklineData.length > 0 && (
+          <div className="h-12 flex items-end space-x-1">
+            {sparklineData.map((value, index) => {
+              const height = ((value - minValue) / range) * 100
+              return (
+                <div
+                  key={index}
+                  className="flex-1 bg-gradient-to-t opacity-60 rounded-t transition-all duration-300 hover:opacity-100"
+                  style={{
+                    height: `${height}%`,
+                    backgroundImage: `linear-gradient(to top, ${
+                      color === 'primary' ? '#0967d2' :
+                      color === 'accent' ? '#2cb1bc' :
+                      color === 'tech-green' ? '#15b79e' :
+                      color === 'tech-purple' ? '#a855f7' :
+                      '#f59e0b'
+                    }, transparent)`
+                  }}
+                />
+              )
+            })}
+          </div>
+        )}
+      </div>
+      
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-20"></div>
     </div>
   )
 }
