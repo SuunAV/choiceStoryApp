@@ -27,27 +27,35 @@ const StoryCreator = () => {
   const steps = [
     {
       id: 'upload',
-      title: 'Upload Book',
-      description: 'Upload your book content',
-      component: BookUploadStep
+      title: 'DATA_INTAKE',
+      description: 'Upload source material and metadata',
+      component: BookUploadStep,
+      icon: '📤',
+      status: 'pending'
     },
     {
       id: 'analysis',
-      title: 'AI Analysis',
-      description: 'AI analyzes your story structure',
-      component: AIAnalysisStep
+      title: 'AI_PROCESSING',
+      description: 'Neural analysis of narrative structure',
+      component: AIAnalysisStep,
+      icon: '🧠',
+      status: 'pending'
     },
     {
       id: 'preview',
-      title: 'Preview Story',
-      description: 'Review and customize your interactive story',
-      component: PreviewStep
+      title: 'STRUCTURE_REVIEW',
+      description: 'Validate generated story architecture',
+      component: PreviewStep,
+      icon: '👁',
+      status: 'pending'
     },
     {
       id: 'generate',
-      title: 'Generate App',
-      description: 'Create your final application',
-      component: GenerateAppStep
+      title: 'BUILD_DEPLOY',
+      description: 'Compile and package interactive application',
+      component: GenerateAppStep,
+      icon: '🚀',
+      status: 'pending'
     }
   ]
 
@@ -88,7 +96,6 @@ const StoryCreator = () => {
    */
   const nextStep = async () => {
     if (currentStep < steps.length - 1) {
-      // Validate current step before proceeding
       const isValid = await validateCurrentStep()
       if (isValid) {
         setCurrentStep(prev => prev + 1)
@@ -156,128 +163,221 @@ const StoryCreator = () => {
     }
   }
 
+  const getStepStatus = (stepIndex) => {
+    if (stepIndex === currentStep) return 'active'
+    if (stepIndex < currentStep || isStepCompleted(stepIndex)) return 'completed'
+    return 'pending'
+  }
+
   const CurrentStepComponent = steps[currentStep].component
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Progress Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        {/* Progress Bar */}
-        <div className="flex items-center justify-between mb-6">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              {/* Step Circle */}
-              <div className={`
-                flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all
-                ${index === currentStep 
-                  ? 'border-primary-600 bg-primary-600 text-white' 
-                  : index < currentStep || isStepCompleted(index)
-                    ? 'border-success-600 bg-success-600 text-white'
-                    : 'border-gray-300 bg-white text-gray-400'
-                }
-              `}>
-                {index < currentStep || isStepCompleted(index) ? (
-                  <Check className="w-5 h-5" />
-                ) : (
-                  <span className="text-sm font-semibold">{index + 1}</span>
-                )}
+    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+      {/* Tech Background */}
+      <div className="absolute inset-0 bg-grid-slate-800/20 [mask-image:linear-gradient(0deg,transparent,black,transparent)]"></div>
+      
+      {/* Scanning animation */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-40 animate-[scan_6s_ease-in-out_infinite]"></div>
+      </div>
+
+      <div className="relative z-10 p-6 space-y-6">
+        {/* Header */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-mono">
+                STORY_COMPILER_v3.1.2
+              </h1>
+              <div className="flex items-center space-x-4 text-sm font-mono">
+                <span className="text-cyan-400">● COMPILATION_MODE</span>
+                <span className="text-slate-400">|</span>
+                <span className="text-slate-400">STEP: {currentStep + 1}/{steps.length}</span>
+                <span className="text-slate-400">|</span>
+                <span className="text-slate-400">PIPELINE: {steps[currentStep].id.toUpperCase()}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-slate-400 text-xs font-mono">BUILD_STATUS</div>
+                <div className="text-cyan-400 text-sm font-mono font-bold">
+                  {isProcessing ? 'PROCESSING...' : 'READY'}
+                </div>
+              </div>
+              <div className={`w-2 h-8 rounded-full animate-pulse shadow-lg ${
+                isProcessing ? 'bg-yellow-400 shadow-yellow-400/50' : 'bg-cyan-400 shadow-cyan-400/50'
+              }`}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Pipeline */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white font-mono">BUILD_PIPELINE</h2>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+              <span className="text-cyan-400 text-xs font-mono">ACTIVE</span>
+            </div>
+          </div>
+
+          <div className="relative">
+            {/* Progress Line */}
+            <div className="absolute top-8 left-6 right-6 h-0.5 bg-slate-700">
+              <div 
+                className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 transition-all duration-500 ease-out"
+                style={{ width: `${((currentStep) / (steps.length - 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="flex justify-between">
+              {steps.map((step, index) => {
+                const status = getStepStatus(index)
+                return (
+                  <div key={step.id} className="flex flex-col items-center relative">
+                    {/* Step Circle */}
+                    <div className={`
+                      relative z-10 w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                      ${status === 'active' 
+                        ? 'border-cyan-400 bg-cyan-400/20 shadow-lg shadow-cyan-400/30' 
+                        : status === 'completed'
+                          ? 'border-green-400 bg-green-400/20 shadow-lg shadow-green-400/30'
+                          : 'border-slate-600 bg-slate-800/50'
+                      }
+                    `}>
+                      {status === 'completed' ? (
+                        <Check className="w-6 h-6 text-green-400" />
+                      ) : status === 'active' && isProcessing ? (
+                        <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <span className="text-2xl">{step.icon}</span>
+                      )}
+                    </div>
+                    
+                    {/* Step Info */}
+                    <div className="mt-4 text-center max-w-32">
+                      <div className={`text-sm font-mono font-bold ${
+                        status === 'active' ? 'text-cyan-400' : 
+                        status === 'completed' ? 'text-green-400' : 'text-slate-400'
+                      }`}>
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1 font-mono">
+                        {step.description}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Current Step Content */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm relative overflow-hidden">
+          {/* Step Header */}
+          <div className="border-b border-slate-800 p-6 bg-slate-800/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full border border-cyan-400/50 bg-cyan-400/10 flex items-center justify-center">
+                  <span className="text-2xl">{steps[currentStep].icon}</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white font-mono">
+                    {steps[currentStep].title}
+                  </h3>
+                  <p className="text-slate-400 text-sm font-mono">
+                    {steps[currentStep].description}
+                  </p>
+                </div>
               </div>
               
-              {/* Step Label */}
-              <div className="ml-3 hidden sm:block">
-                <p className={`text-sm font-medium ${
-                  index === currentStep 
-                    ? 'text-primary-600' 
-                    : index < currentStep || isStepCompleted(index)
-                      ? 'text-success-600'
-                      : 'text-gray-500'
-                }`}>
-                  {step.title}
-                </p>
-                <p className="text-xs text-gray-400">{step.description}</p>
+              <div className="text-right">
+                <div className="text-slate-400 text-xs font-mono">STEP_ID</div>
+                <div className="text-cyan-400 text-sm font-mono font-bold">
+                  {steps[currentStep].id.toUpperCase()}
+                </div>
               </div>
-
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className={`
-                  mx-6 w-12 h-0.5 transition-all
-                  ${index < currentStep || isStepCompleted(index)
-                    ? 'bg-success-600'
-                    : 'bg-gray-300'
-                  }
-                `} />
-              )}
             </div>
-          ))}
+          </div>
+
+          {/* Step Content */}
+          <div className="p-6">
+            <CurrentStepComponent
+              storyData={storyData}
+              updateStoryData={updateStoryData}
+              isProcessing={isProcessing}
+              setIsProcessing={setIsProcessing}
+              onNext={nextStep}
+              onPrev={prevStep}
+            />
+          </div>
         </div>
 
-        {/* Current Step Info */}
-        <div className="text-center">
-          <h2 className="text-2xl font-display font-bold text-gray-900">
-            {steps[currentStep].title}
-          </h2>
-          <p className="text-gray-600 mt-2">
-            {steps[currentStep].description}
-          </p>
+        {/* Navigation Controls */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={prevStep}
+              disabled={currentStep === 0}
+              className={`
+                inline-flex items-center px-6 py-3 rounded-lg font-mono font-medium transition-all duration-300
+                ${currentStep === 0
+                  ? 'bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed'
+                  : 'bg-slate-800 text-slate-300 border border-slate-600 hover:bg-slate-700 hover:border-slate-500 hover:text-white'
+                }
+              `}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              PREVIOUS
+            </button>
+
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <div className="text-slate-400 text-xs font-mono">PROGRESS</div>
+                <div className="text-white font-mono font-bold">
+                  {Math.round(((currentStep + 1) / steps.length) * 100)}%
+                </div>
+              </div>
+              <div className="w-32 bg-slate-800 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-cyan-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <button
+              onClick={nextStep}
+              disabled={currentStep === steps.length - 1 || isProcessing}
+              className={`
+                inline-flex items-center px-6 py-3 rounded-lg font-mono font-medium transition-all duration-300
+                ${currentStep === steps.length - 1 || isProcessing
+                  ? 'bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white border border-cyan-500 hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-500/25'
+                }
+              `}
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  PROCESSING
+                </>
+              ) : currentStep === steps.length - 1 ? (
+                <>
+                  COMPLETE
+                  <Check className="w-4 h-4 ml-2" />
+                </>
+              ) : (
+                <>
+                  NEXT
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Step Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 min-h-96">
-        <CurrentStepComponent
-          storyData={storyData}
-          updateStoryData={updateStoryData}
-          isProcessing={isProcessing}
-          setIsProcessing={setIsProcessing}
-          onNext={nextStep}
-          onPrev={prevStep}
-        />
-      </div>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className={`
-            inline-flex items-center px-6 py-3 rounded-lg font-medium transition-all
-            ${currentStep === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }
-          `}
-        >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Previous
-        </button>
-
-        <div className="text-sm text-gray-500">
-          Step {currentStep + 1} of {steps.length}
-        </div>
-
-        <button
-          onClick={nextStep}
-          disabled={currentStep === steps.length - 1 || isProcessing}
-          className={`
-            inline-flex items-center px-6 py-3 rounded-lg font-medium transition-all
-            ${currentStep === steps.length - 1 || isProcessing
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-primary-600 text-white hover:bg-primary-700'
-            }
-          `}
-        >
-          {isProcessing ? (
-            <>
-              <div className="w-4 h-4 mr-2 animate-spin border-2 border-current border-t-transparent rounded-full" />
-              Processing...
-            </>
-          ) : (
-            <>
-              Next
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </>
-          )}
-        </button>
       </div>
     </div>
   )

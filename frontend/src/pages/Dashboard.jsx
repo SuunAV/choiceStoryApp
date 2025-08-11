@@ -22,61 +22,82 @@ const Dashboard = () => {
     systemHealth: 0,
     apiCalls: 0,
     storageUsed: 0,
-    activeUsers: 0
+    activeUsers: 0,
+    uptime: 0,
+    throughput: 0
   })
 
   const [recentProjects, setRecentProjects] = useState([])
+  const [systemMetrics, setSystemMetrics] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState('overview')
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Simulate loading time with progress
+        await new Promise(resolve => setTimeout(resolve, 1200))
         
         setStats({
-          totalProjects: 12,
-          activeProjects: 3,
-          completedStories: 9,
-          totalReads: 1247,
-          systemHealth: 98.5,
-          apiCalls: 3847,
-          storageUsed: 67.3,
-          activeUsers: 89
+          totalProjects: 247,
+          activeProjects: 12,
+          completedStories: 235,
+          totalReads: 15847,
+          systemHealth: 99.2,
+          apiCalls: 428519,
+          storageUsed: 73.8,
+          activeUsers: 156,
+          uptime: 99.97,
+          throughput: 2847
         })
 
         setRecentProjects([
           {
-            id: 1,
-            title: 'The Perfect Gift',
-            status: 'completed',
-            lastModified: '2024-08-07',
-            chapters: 9,
-            choices: 23,
-            performance: 94,
-            engagement: 87
+            id: 'PRJ-2024-001',
+            title: 'The Quantum Garden Chronicles',
+            status: 'deployment',
+            lastModified: '2024-08-09T14:30:00Z',
+            chapters: 15,
+            choices: 47,
+            performance: 96.8,
+            engagement: 92.4,
+            version: 'v2.1.3',
+            buildStatus: 'passed'
           },
           {
-            id: 2,
-            title: 'Adventure Island',
-            status: 'in-progress',
-            lastModified: '2024-08-06',
-            chapters: 5,
-            choices: 12,
-            performance: 89,
-            engagement: 92
+            id: 'PRJ-2024-002', 
+            title: 'Neural Network Adventures',
+            status: 'testing',
+            lastModified: '2024-08-09T11:15:00Z',
+            chapters: 8,
+            choices: 24,
+            performance: 94.2,
+            engagement: 88.7,
+            version: 'v1.8.1',
+            buildStatus: 'building'
           },
           {
-            id: 3,
-            title: 'Mystery at School',
-            status: 'draft',
-            lastModified: '2024-08-05',
-            chapters: 2,
-            choices: 4,
-            performance: 76,
-            engagement: 68
+            id: 'PRJ-2024-003',
+            title: 'Cybersecurity Quest Academy',
+            status: 'active',
+            lastModified: '2024-08-08T16:45:00Z',
+            chapters: 22,
+            choices: 73,
+            performance: 97.9,
+            engagement: 94.3,
+            version: 'v3.2.0',
+            buildStatus: 'passed'
           }
         ])
+
+        setSystemMetrics([
+          { timestamp: '14:25', cpu: 23.4, memory: 67.8, network: 45.2 },
+          { timestamp: '14:26', cpu: 28.1, memory: 69.1, network: 52.7 },
+          { timestamp: '14:27', cpu: 19.7, memory: 65.3, network: 38.9 },
+          { timestamp: '14:28', cpu: 31.2, memory: 71.2, network: 48.5 },
+          { timestamp: '14:29', cpu: 25.8, memory: 68.9, network: 44.1 }
+        ])
+
       } catch (error) {
         console.error('Error loading dashboard data:', error)
       } finally {
@@ -85,294 +106,297 @@ const Dashboard = () => {
     }
 
     loadDashboardData()
+
+    // Real-time updates simulation
+    const interval = setInterval(() => {
+      setStats(prev => ({
+        ...prev,
+        apiCalls: prev.apiCalls + Math.floor(Math.random() * 10),
+        activeUsers: prev.activeUsers + Math.floor(Math.random() * 3) - 1,
+        throughput: 2800 + Math.floor(Math.random() * 100)
+      }))
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [])
+
+  const getStatusColor = (status) => {
+    const colors = {
+      deployment: 'text-blue-400 bg-blue-400/20 border-blue-400/30',
+      testing: 'text-yellow-400 bg-yellow-400/20 border-yellow-400/30',
+      active: 'text-green-400 bg-green-400/20 border-green-400/30',
+      maintenance: 'text-orange-400 bg-orange-400/20 border-orange-400/30',
+      error: 'text-red-400 bg-red-400/20 border-red-400/30'
+    }
+    return colors[status] || colors.active
+  }
+
+  const getBuildStatusIcon = (status) => {
+    switch (status) {
+      case 'passed': return '✓'
+      case 'building': return '⟳'
+      case 'failed': return '✗'
+      default: return '●'
+    }
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="tech-loader"></div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+            <div className="w-12 h-12 border-4 border-cyan-400/20 border-t-cyan-400 rounded-full animate-spin absolute top-2 left-2"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-blue-400 font-mono text-sm">INITIALIZING SYSTEMS...</div>
+            <div className="text-slate-400 font-mono text-xs">Loading dashboard modules</div>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen space-y-8 relative">
-      {/* Background Grid */}
-      <div className="fixed inset-0 tech-grid opacity-10 pointer-events-none"></div>
+    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+      {/* Tech grid background */}
+      <div className="absolute inset-0 bg-grid-slate-800/20 [mask-image:linear-gradient(0deg,transparent,black,transparent)]"></div>
+      
+      {/* Scanning line animation */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-60 animate-[scan_4s_ease-in-out_infinite]"></div>
+      </div>
 
-      {/* Command Center Header */}
-      <div className="relative">
-        <div className="tech-border rounded-xl p-8 glass">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-display font-bold text-gradient mb-2">
-                Story Command Center
+      <div className="relative z-10 p-6 space-y-6">
+        {/* Header */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent font-mono">
+                STORY_ENGINE_v2.4.1
               </h1>
-              <p className="text-dark-300 text-lg font-mono">
-                System Status: <span className="text-tech-green-400">OPERATIONAL</span>
-              </p>
+              <div className="flex items-center space-x-4 text-sm font-mono">
+                <span className="text-green-400">● OPERATIONAL</span>
+                <span className="text-slate-400">|</span>
+                <span className="text-slate-400">UPTIME: {stats.uptime}%</span>
+                <span className="text-slate-400">|</span>
+                <span className="text-slate-400">THROUGHPUT: {stats.throughput} ops/sec</span>
+              </div>
             </div>
-            <div className="hidden md:flex items-center space-x-4">
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-slate-400 text-xs font-mono">SYSTEM STATUS</div>
+                <div className="text-green-400 text-sm font-mono font-bold">ALL_SYSTEMS_NOMINAL</div>
+              </div>
+              <div className="w-2 h-8 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* System Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Primary Metrics */}
+          <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6 hover:border-blue-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-blue-400 text-sm font-mono font-bold">PROJECTS</div>
+              <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <span className="text-blue-400 text-sm">📊</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold font-mono text-white">{stats.totalProjects}</div>
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-green-400 font-mono">↗ +{stats.activeProjects} active</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6 hover:border-cyan-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-cyan-400 text-sm font-mono font-bold">STORIES</div>
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                <span className="text-cyan-400 text-sm">📚</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold font-mono text-white">{stats.completedStories}</div>
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-cyan-400 font-mono">{stats.totalReads.toLocaleString()} reads</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6 hover:border-purple-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-purple-400 text-sm font-mono font-bold">API_CALLS</div>
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <span className="text-purple-400 text-sm">⚡</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold font-mono text-white">{stats.apiCalls.toLocaleString()}</div>
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-purple-400 font-mono">Real-time</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6 hover:border-green-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-green-400 text-sm font-mono font-bold">HEALTH</div>
+              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                <span className="text-green-400 text-sm">💚</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold font-mono text-white">{stats.systemHealth}%</div>
+              <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="bg-green-400 h-2 rounded-full transition-all duration-300" style={{width: `${stats.systemHealth}%`}}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Quick Actions - Enhanced */}
+          <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white font-mono">COMMAND_CENTER</h2>
+              <div className="text-green-400 text-xs font-mono">READY</div>
+            </div>
+            
+            <div className="space-y-4">
+              <button 
+                onClick={() => window.location.href = '/create-story'}
+                className="w-full group relative overflow-hidden border border-blue-500/50 rounded-lg p-4 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 transition-all duration-300 hover:border-blue-400"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/5 to-blue-400/0 group-hover:via-blue-400/10 transition-all duration-300"></div>
+                <div className="relative flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <span className="text-blue-400 text-lg">⚡</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-white font-mono font-bold">INITIALIZE_STORY</div>
+                    <div className="text-blue-400 text-xs font-mono">Launch new project</div>
+                  </div>
+                </div>
+              </button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button className="border border-slate-700 rounded-lg p-3 bg-slate-800/50 hover:bg-slate-700/50 transition-colors group">
+                  <div className="text-slate-400 group-hover:text-cyan-400 text-sm font-mono">DEPLOY</div>
+                </button>
+                <button className="border border-slate-700 rounded-lg p-3 bg-slate-800/50 hover:bg-slate-700/50 transition-colors group">
+                  <div className="text-slate-400 group-hover:text-purple-400 text-sm font-mono">ANALYZE</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Projects - Enhanced */}
+          <div className="lg:col-span-2 border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white font-mono">PROJECT_REGISTRY</h2>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-tech-green-400 animate-pulse"></div>
-                <span className="text-sm font-mono text-dark-400">LIVE</span>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-green-400 text-xs font-mono">LIVE</span>
               </div>
-              <Terminal className="h-8 w-8 text-primary-400" />
             </div>
-          </div>
-          
-          {/* Quick Access Toolbar */}
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/create"
-              className="tech-button rounded-lg inline-flex items-center group"
-            >
-              <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
-              Initialize New Story
-            </Link>
-            <button
-              onClick={() => setActiveView('analytics')}
-              className="px-4 py-2 glass rounded-lg font-medium text-dark-200 hover:text-white hover:bg-dark-800/50 transition-all"
-            >
-              <BarChart3 className="h-5 w-5 inline mr-2" />
-              Analytics
-            </button>
-            <button
-              onClick={() => setActiveView('system')}
-              className="px-4 py-2 glass rounded-lg font-medium text-dark-200 hover:text-white hover:bg-dark-800/50 transition-all"
-            >
-              <Server className="h-5 w-5 inline mr-2" />
-              System Monitor
-            </button>
-          </div>
-        </div>
 
-        {/* Scanning Line Animation */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent animate-scan"></div>
-      </div>
-
-      {/* Primary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-          title="Total Projects"
-          value={stats.totalProjects}
-          icon={Database}
-          color="primary"
-          trend="+12.5%"
-          sparklineData={[5, 7, 6, 9, 8, 10, 12]}
-        />
-        <StatsCard
-          title="Active Stories"
-          value={stats.activeProjects}
-          icon={Activity}
-          color="accent"
-          trend="3 running"
-          sparklineData={[2, 3, 2, 3, 4, 3, 3]}
-        />
-        <StatsCard
-          title="System Health"
-          value={`${stats.systemHealth}%`}
-          icon={Shield}
-          color="tech-green"
-          trend="Optimal"
-          sparklineData={[95, 96, 98, 97, 99, 98, 98.5]}
-        />
-        <StatsCard
-          title="API Calls"
-          value={stats.apiCalls.toLocaleString()}
-          icon={Zap}
-          color="tech-purple"
-          trend="+278 today"
-          sparklineData={[3200, 3400, 3500, 3600, 3700, 3800, 3847]}
-        />
-      </div>
-
-      {/* System Metrics Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="tech-border rounded-lg p-6 glass">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center">
-              <Cpu className="h-5 w-5 mr-2 text-primary-400" />
-              Performance Metrics
-            </h3>
-            <span className="text-xs font-mono text-dark-400">REAL-TIME</span>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-dark-300">CPU Usage</span>
-              <span className="text-sm font-mono text-tech-green-400">23.4%</span>
-            </div>
-            <div className="w-full bg-dark-800 rounded-full h-2">
-              <div className="bg-gradient-to-r from-primary-500 to-accent-500 h-2 rounded-full" style={{width: '23.4%'}}></div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-dark-300">Memory</span>
-              <span className="text-sm font-mono text-tech-yellow-400">67.3%</span>
-            </div>
-            <div className="w-full bg-dark-800 rounded-full h-2">
-              <div className="bg-gradient-to-r from-tech-yellow-500 to-tech-yellow-400 h-2 rounded-full" style={{width: '67.3%'}}></div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-dark-300">Storage</span>
-              <span className="text-sm font-mono text-accent-400">45.8 GB</span>
-            </div>
-            <div className="w-full bg-dark-800 rounded-full h-2">
-              <div className="bg-gradient-to-r from-accent-500 to-accent-400 h-2 rounded-full" style={{width: '45.8%'}}></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="tech-border rounded-lg p-6 glass">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center">
-              <GitBranch className="h-5 w-5 mr-2 text-accent-400" />
-              Version Control
-            </h3>
-            <span className="tech-badge">v2.4.1</span>
-          </div>
-          <div className="space-y-3 font-mono text-sm">
-            <div className="flex justify-between">
-              <span className="text-dark-400">Latest Deploy:</span>
-              <span className="text-tech-green-400">2 hours ago</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-dark-400">Build Status:</span>
-              <span className="text-tech-green-400">SUCCESS</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-dark-400">Active Branch:</span>
-              <span className="text-primary-400">main</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-dark-400">Commits Today:</span>
-              <span className="text-accent-400">14</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="tech-border rounded-lg p-6 glass">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center">
-              <Cloud className="h-5 w-5 mr-2 text-tech-purple-400" />
-              Cloud Services
-            </h3>
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 rounded-full bg-tech-green-400"></div>
-              <div className="w-2 h-2 rounded-full bg-tech-green-400"></div>
-              <div className="w-2 h-2 rounded-full bg-tech-green-400"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary-400">99.9%</div>
-              <div className="text-xs text-dark-400">Uptime</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-accent-400">42ms</div>
-              <div className="text-xs text-dark-400">Latency</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-tech-purple-400">CDN</div>
-              <div className="text-xs text-dark-400">Active</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-tech-green-400">SSL</div>
-              <div className="text-xs text-dark-400">Secured</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Projects & Analytics */}
-        <div className="lg:col-span-2 space-y-6">
-          {activeView === 'overview' && (
-            <>
-              <div className="tech-border rounded-xl p-6 glass">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-dark-100 flex items-center">
-                    <FileCode className="h-6 w-6 mr-2 text-primary-400" />
-                    Active Story Projects
-                  </h3>
-                  <Link to="/projects" className="text-sm text-primary-400 hover:text-primary-300 font-mono">
-                    VIEW ALL →
-                  </Link>
-                </div>
-                <RecentProjects projects={recentProjects} />
-              </div>
-
-              <AnalyticsChart />
-            </>
-          )}
-
-          {activeView === 'analytics' && (
-            <div className="tech-border rounded-xl p-6 glass">
-              <h3 className="text-xl font-semibold text-dark-100 mb-6">Deep Analytics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="p-4 bg-dark-900/50 rounded-lg">
-                    <LineChart className="h-6 w-6 text-primary-400 mb-2" />
-                    <div className="text-2xl font-bold text-dark-100">1,247</div>
-                    <div className="text-sm text-dark-400">Total Story Reads</div>
+            <div className="space-y-3">
+              {recentProjects.map((project) => (
+                <div key={project.id} className="border border-slate-700 rounded-lg p-4 bg-slate-800/30 hover:bg-slate-800/50 hover:border-slate-600 transition-all duration-200 group cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="text-slate-400 font-mono text-sm">{project.id}</div>
+                      <div className="w-px h-6 bg-slate-700"></div>
+                      <div>
+                        <div className="text-white font-mono font-bold">{project.title}</div>
+                        <div className="flex items-center space-x-3 text-xs font-mono text-slate-400 mt-1">
+                          <span>v{project.version}</span>
+                          <span>•</span>
+                          <span>{project.chapters} chapters</span>
+                          <span>•</span>
+                          <span>{project.choices} choices</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className={`px-2 py-1 rounded text-xs font-mono border ${getStatusColor(project.status)}`}>
+                        {project.status.toUpperCase()}
+                      </div>
+                      <div className="text-lg">
+                        {getBuildStatusIcon(project.buildStatus)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-4 bg-dark-900/50 rounded-lg">
-                    <PieChart className="h-6 w-6 text-accent-400 mb-2" />
-                    <div className="text-2xl font-bold text-dark-100">87%</div>
-                    <div className="text-sm text-dark-400">Completion Rate</div>
+                  
+                  <div className="mt-3 flex items-center space-x-6 text-xs font-mono">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-500">PERF:</span>
+                      <span className="text-green-400">{project.performance}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-500">ENG:</span>
+                      <span className="text-cyan-400">{project.engagement}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-500">MODIFIED:</span>
+                      <span className="text-slate-400">{new Date(project.lastModified).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="h-64 bg-dark-900/50 rounded-lg flex items-center justify-center">
-                  <span className="text-dark-500 font-mono">CHART_PLACEHOLDER</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeView === 'system' && (
-            <SystemStatus />
-          )}
-        </div>
-
-        {/* Command Panel & Activity */}
-        <div className="space-y-6">
-          <QuickActions />
-          <ActivityFeed />
-          
-          {/* Terminal Output */}
-          <div className="terminal">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-tech-green-400 font-mono text-xs">SYSTEM_LOG</span>
-              <span className="text-dark-500 text-xs">auto-refresh</span>
-            </div>
-            <div className="space-y-1 text-xs">
-              <div className="text-tech-green-400">
-                <span className="text-dark-500">[12:34:56]</span> Story build completed successfully
-              </div>
-              <div className="text-primary-400">
-                <span className="text-dark-500">[12:34:12]</span> New user registration: user_892
-              </div>
-              <div className="text-accent-400">
-                <span className="text-dark-500">[12:33:45]</span> API endpoint health check: OK
-              </div>
-              <div className="text-tech-yellow-400">
-                <span className="text-dark-500">[12:33:01]</span> Cache cleared: 127MB freed
-              </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Footer Status Bar */}
-      <div className="glass rounded-lg p-4 flex items-center justify-between text-sm font-mono">
-        <div className="flex items-center space-x-6">
-          <span className="text-dark-400">Server: <span className="text-tech-green-400">us-west-2</span></span>
-          <span className="text-dark-400">Load: <span className="text-primary-400">0.42</span></span>
-          <span className="text-dark-400">Queue: <span className="text-accent-400">3 jobs</span></span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Monitor className="h-4 w-4 text-dark-400" />
-          <span className="text-dark-400">Dashboard v2.4.1</span>
+        {/* System Analytics */}
+        <div className="border border-slate-800 rounded-lg bg-slate-900/50 backdrop-blur-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white font-mono">SYSTEM_TELEMETRY</h2>
+            <div className="flex items-center space-x-4">
+              <div className="text-xs font-mono text-slate-400">Real-time metrics</div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* CPU Usage */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-mono text-slate-400">CPU_USAGE</span>
+                <span className="text-sm font-mono text-blue-400">25.8%</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="bg-blue-400 h-2 rounded-full transition-all duration-300" style={{width: '25.8%'}}></div>
+              </div>
+            </div>
+
+            {/* Memory Usage */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-mono text-slate-400">MEMORY</span>
+                <span className="text-sm font-mono text-cyan-400">68.9%</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="bg-cyan-400 h-2 rounded-full transition-all duration-300" style={{width: '68.9%'}}></div>
+              </div>
+            </div>
+
+            {/* Network I/O */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-mono text-slate-400">NETWORK_IO</span>
+                <span className="text-sm font-mono text-purple-400">44.1%</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="bg-purple-400 h-2 rounded-full transition-all duration-300" style={{width: '44.1%'}}></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

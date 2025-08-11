@@ -9,20 +9,19 @@
     "app-template"
   ],
   "scripts": {
-    "dev": "npm run frontend:dev",
-    "build": "npm run frontend:build",
-    "start": "npm run frontend:dev",
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "build": "npm run backend:build && npm run frontend:build",
+    "start": "concurrently \"npm run backend:start\" \"npm run frontend:dev\"",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:start": "cd backend && npm start",
+    "backend:build": "cd backend && npm install",
     "test": "npm run frontend:test",
     "frontend:test": "cd frontend && npm test",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
-    "security:scan": "npm audit",
-    "generate:app": "node scripts/generate-app.js",
-    "build:electron": "node scripts/build-electron.js",
-    "build:mobile": "node scripts/build-mobile.js",
-    "deploy": "node scripts/deploy.js"
+    "security:scan": "npm audit --fix"
   },
   "keywords": [
     "interactive-stories",

@@ -4,7 +4,7 @@
   "scenes": {
     "SCENE_1": {
       "title": "The Challenge",
-      "description": "You are Marlon. Your teacher, Miss Yamaguchi, has given your class a special project: find a perfect gift to send to the kids at Children's Hospital. You're completely stumped! Your mom is busy with the baby but tells you, 'You'll think of something extra special.' You feel frustrated. Who should you ask for help next?",
+      "description": "Pretend you are Marlon. Your teacher, Miss Yamaguchi, has given your class a special project: find a perfect gift to send to the kids at Children's Hospital. You're completely stumped! Your mom is busy with the baby but tells you, 'You'll think of something extra special.' You feel frustrated. Who should you ask for help next?",
       "decision_point": {
         "prompt": "Who will you ask for help?",
         "choices": [

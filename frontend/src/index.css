@@ -209,4 +209,60 @@
   .glow-lg {
     filter: drop-shadow(0 0 24px currentColor);
   }
+
+  /* Technical animations */
+  .animate-scan {
+    animation: scan 4s ease-in-out infinite;
+  }
+
+  .animate-grid-pulse {
+    animation: grid-pulse 3s ease-in-out infinite;
+  }
+
+  .animate-data-flow {
+    animation: data-flow 2s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { transform: translateX(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(100vw); opacity: 0; }
+  }
+
+  @keyframes grid-pulse {
+    0%, 100% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+  }
+
+  @keyframes data-flow {
+    0% { transform: translateX(-100%) scaleX(0); }
+    50% { transform: translateX(0) scaleX(1); }
+    100% { transform: translateX(100%) scaleX(0); }
+  }
+
+  /* Grid background */
+  .bg-grid-slate-800\/20 {
+    background-image: 
+      linear-gradient(rgba(30, 41, 59, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 41, 59, 0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Engineering aesthetic utilities */
+  .border-tech {
+    border-color: rgb(71, 85, 105);
+    border-image: linear-gradient(45deg, transparent 30%, rgb(71, 85, 105) 50%, transparent 70%) 1;
+  }
+
+  .shadow-neon-blue {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(56, 189, 248, 0.1);
+  }
+
+  .shadow-neon-cyan {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), 0 0 40px rgba(34, 211, 238, 0.1);
+  }
+
+  .shadow-neon-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.1);
+  }
 }
