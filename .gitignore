@@ -4,6 +4,8 @@
 .cursor/
 docs/
 .serena/
+ai-agents/
+.ai-config/
 
 # Dependencies
 node_modules/
@@ -42,6 +44,17 @@ lerna-debug.log*
 # Testing
 coverage/
 .nyc_output/
+
+# Test directory (comprehensive test environment)
+tests/
+
+# Test runtime data (keep fixtures but ignore generated data)
+tests/data/
+tests/artifacts/
+tests/output/
+test-*
+*test_*
+*-test-*
 
 # Temporary files
 .tmp/
